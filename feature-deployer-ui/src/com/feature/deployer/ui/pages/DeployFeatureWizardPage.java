@@ -8,24 +8,11 @@
  * Contributors:
  *     Subclipse project committers - initial API and implementation
  ******************************************************************************/
-package feature.deployer.wizard;
+package com.feature.deployer.ui.pages;
 
 
-import java.util.ArrayList;
-
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.DecoratingLabelProvider;
-import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.ListViewer;
-import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -35,17 +22,12 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.model.WorkbenchContentProvider;
-import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.eclipse.ui.model.WorkbenchViewerSorter;
-import org.eclipse.ui.views.navigator.ResourceSorter;
-import org.tigris.subversion.subclipse.ui.SVNUIPlugin;
 
 /**
  * Common superclass for SVN wizard pages. Provides convenience methods
  * for widget creation.
  */
-public abstract class FeatureDeployerWizardPage extends WizardPage {
+public abstract class DeployFeatureWizardPage extends WizardPage {
 	protected static final int LABEL_WIDTH_HINT = 400;
 	protected static final int LABEL_INDENT_WIDTH = 32;
 	protected static final int LIST_HEIGHT_HINT = 100;
@@ -55,7 +37,7 @@ public abstract class FeatureDeployerWizardPage extends WizardPage {
 	 * SVNWizardPage constructor comment.
 	 * @param pageName  the name of the page
 	 */
-	public FeatureDeployerWizardPage(String pageName) {
+	public DeployFeatureWizardPage(String pageName) {
 		super(pageName);
 	}
 	/**
@@ -64,7 +46,7 @@ public abstract class FeatureDeployerWizardPage extends WizardPage {
 	 * @param title  the title of the page
 	 * @param titleImage  the image for the page
 	 */
-	public FeatureDeployerWizardPage(String pageName, String title, ImageDescriptor titleImage) {
+	public DeployFeatureWizardPage(String pageName, String title, ImageDescriptor titleImage) {
 		super(pageName, title, titleImage);
 	}
 	/**
@@ -74,7 +56,7 @@ public abstract class FeatureDeployerWizardPage extends WizardPage {
 	 * @param titleImage  the image for the page
 	 * @param description the description of the page
 	 */
-	public FeatureDeployerWizardPage(String pageName, String title, ImageDescriptor titleImage, String description) {
+	public DeployFeatureWizardPage(String pageName, String title, ImageDescriptor titleImage, String description) {
 		super(pageName, title, titleImage);
 		setDescription(description);
 	}
@@ -234,89 +216,5 @@ public abstract class FeatureDeployerWizardPage extends WizardPage {
 		label.setLayoutData(data);
 	}
 	
-	/**
-	 * Creates a ListViewer whose input is an array of IFiles.
-	 * 
-	 * @param parent  the parent of the viewer
-	 * @param title  the text for the title label
-	 * @param heightHint  the nominal height of the list
-	 * @return the created list viewer
-	 */
-	public ListViewer createFileListViewer(Composite parent, String title, int heightHint) {
-		createLabel(parent, title);
-		ListViewer listViewer = new ListViewer(parent, SWT.READ_ONLY | SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
-		listViewer.setContentProvider(new IStructuredContentProvider() {
-			public Object[] getElements(Object inputElement) {
-				return (Object[]) inputElement;
-			}
-			public void dispose() {
-			}
-			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-			}
-		});
-		listViewer.setLabelProvider(new LabelProvider() {
-			public String getText(Object element) {
-				return ((IFile) element).getFullPath().toString();
-			}
-		});
-		listViewer.setSorter(new WorkbenchViewerSorter());
-
-		GridData data = new GridData(GridData.FILL_BOTH);
-		data.heightHint = heightHint;
-		listViewer.getList().setLayoutData(data);
-		return listViewer;
-	}
-
-	protected TreeViewer createResourceSelectionTree(Composite composite, int types, int span) {
-		TreeViewer tree = new TreeViewer(composite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
-		tree.setUseHashlookup(true);
-		tree.setContentProvider(getResourceProvider(types));
-		tree.setLabelProvider(
-			new DecoratingLabelProvider(
-				new WorkbenchLabelProvider(), 
-				SVNUIPlugin.getPlugin().getWorkbench().getDecoratorManager().getLabelDecorator()));
-		tree.setSorter(new ResourceSorter(ResourceSorter.NAME));
-		
-		GridData data = new GridData(GridData.FILL_BOTH | GridData.GRAB_VERTICAL);
-		data.heightHint = LIST_HEIGHT_HINT;
-		data.horizontalSpan = span;
-		tree.getControl().setLayoutData(data);
-		return tree;
-	}
-
-	/**
-	 * Returns a content provider for <code>IResource</code>s that returns 
-	 * only children of the given resource type.
-	 */
-	protected ITreeContentProvider getResourceProvider(final int resourceType) {
-		return new WorkbenchContentProvider() {
-			public Object[] getChildren(Object o) {
-				if (o instanceof IContainer) {
-					IResource[] members = null;
-					try {
-						members = ((IContainer)o).members();
-					} catch (CoreException e) {
-						//just return an empty set of children
-						return new Object[0];
-					}
 	
-					//filter out the desired resource types
-					ArrayList results = new ArrayList();
-					for (int i = 0; i < members.length; i++) {
-						//And the test bits with the resource types to see if they are what we want
-						if ((members[i].getType() & resourceType) > 0) {
-							results.add(members[i]);
-						}
-					}
-					return results.toArray();
-				} else {
-					return super.getChildren(o);
-				}
-			}
-		};
-	}
-/*	
-	protected RepositoryManager getRepositoryManager() {
-		return SVNUIPlugin.getPlugin().getRepositoryManager();
-	}*/
 }

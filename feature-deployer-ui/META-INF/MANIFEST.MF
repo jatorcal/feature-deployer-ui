@@ -1,16 +1,14 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Feature Deployer UI
+Bundle-Name: Feature-deployer-ui
 Bundle-SymbolicName: feature-deployer-ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: feature.deployer.preferences.page.Activator
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.runtime,
- org.tigris.subversion.subclipse.ui;bundle-version="4.2.3",
- org.eclipse.ui.workbench,
- org.tigris.subversion.subclipse.core
+Bundle-Activator: com.feature.deployer.ui.activator.Activator
+Require-Bundle: org.eclipse.core.runtime,
+ org.tigris.subversion.subclipse.core;bundle-version="4.2.3",
+ org.eclipse.ui
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Import-Package: org.eclipse.core.resources,
- org.eclipse.ui.views.navigator
-Export-Package: feature.deployer.wizard
+Import-Package: org.eclipse.team.internal.ui,
+ org.tigris.subversion.subclipse.ui
+Export-Package: com.feature.deployer.ui.wizards

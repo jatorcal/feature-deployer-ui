@@ -1,4 +1,4 @@
-package feature.deployer.command;
+package featuredeployerui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -12,15 +12,15 @@ import org.eclipse.jface.dialogs.MessageDialog;
  * @see org.eclipse.core.commands.IHandler
  * @see org.eclipse.core.commands.AbstractHandler
  */
-public class SampleCommand extends AbstractHandler {
+public class SampleHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
 		MessageDialog.openInformation(
 				window.getShell(),
-				"Prueba",
-				"Hello, Perico");
+				"Feature-deployer-ui",
+				"Hello, Eclipse world");
 		return null;
 	}
 }

@@ -8,13 +8,17 @@
  * Contributors:
  *     Subclipse project committers - initial API and implementation
  ******************************************************************************/
-package feature.deployer.wizard;
+package com.feature.deployer.ui.wizards;
 
 
+import java.net.MalformedURLException;
+
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -25,15 +29,17 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.eclipse.ui.part.DrillDownComposite;
-import org.tigris.subversion.subclipse.ui.IHelpContextIds;
-import org.tigris.subversion.subclipse.ui.Policy;
-import org.tigris.subversion.subclipse.ui.repository.RepositoryFilters;
-import org.tigris.subversion.subclipse.ui.repository.model.AllRootsElement;
+import org.tigris.subversion.subclipse.core.ISVNRemoteFolder;
+import org.tigris.subversion.subclipse.core.ISVNRemoteResource;
+import org.tigris.subversion.subclipse.core.util.Util;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
+
+import com.feature.deployer.ui.pages.DeployFeatureWizardPage;
 
 /**
  * the main wizard page for moving or renaming a remote resource on repository
  */
-public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
+public class DeployFeatureWizardMainPage extends DeployFeatureWizardPage {
 
     private static final int LIST_WIDTH = 250;
     private static final int LIST_HEIGHT = 300;
@@ -43,18 +49,35 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
 
     private TreeViewer viewer;
 
+    private ISVNRemoteFolder parentFolder; // the parent folder of the destination
+                                           // by default this is the folder of the resource to rename
     private String resourceName = ""; //$NON-NLS-1$
 
     private ISelectionChangedListener treeSelectionChangedListener = new ISelectionChangedListener() {
         public void selectionChanged(SelectionChangedEvent event) {
             Object selection = ((IStructuredSelection)event.getSelection()).getFirstElement();
+
+            if (selection instanceof ISVNRemoteFolder) {
+                parentFolder = (ISVNRemoteFolder)selection;
+
+            }
+            else
+            if (selection instanceof IAdaptable) {
+                // ISVNRepositoryLocation is adaptable to ISVNRemoteFolder
+                IAdaptable a = (IAdaptable) selection;
+                Object adapter = a.getAdapter(ISVNRemoteFolder.class);
+                parentFolder = (ISVNRemoteFolder)adapter;
+            }
+
+            if (parentFolder != null)
+                urlParentText.setText(parentFolder.getUrl().toString());
         }
 
     };
 
 
 	/**
-	 * MoveRemoteResourceWizardMainPage constructor.
+	 * DeployFeatureResourceWizardMainPage constructor.
 	 *
 	 * @param pageName  the name of the page
 	 * @param title  the title of the page
@@ -75,7 +98,7 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
 	public void createControl(Composite parent) {
 		Composite composite = createComposite(parent, 1);
 		// set F1 help
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, IHelpContextIds.MOVE_RENAME_REMOTE_RESOURCE_PAGE);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, "");
 
 		Listener listener = new Listener() {
 			public void handleEvent(Event event) {
@@ -85,7 +108,7 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
 		};
 
         // the text field for the parent folder
-		createLabel(composite, Policy.bind("MoveRemoteResourceWizardMainPage.selectParentUrl")); //$NON-NLS-1$
+		createLabel(composite, ""); //$NON-NLS-1$
 
         urlParentText = createTextField(composite);
         urlParentText.addListener(SWT.Selection, listener);
@@ -104,13 +127,13 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
         viewer = new TreeViewer(drillDown, SWT.H_SCROLL | SWT.V_SCROLL);
         drillDown.setChildTree(viewer);
         viewer.setLabelProvider(new WorkbenchLabelProvider());
-
-        viewer.setInput(new AllRootsElement());
-        viewer.addFilter(RepositoryFilters.FOLDERS_ONLY);
+        //viewer.setContentProvider(new RemoteContentProvider());
+        //viewer.setInput(new AllRootsElement());
+        //viewer.addFilter(RepositoryFilters.FOLDERS_ONLY);
         viewer.addSelectionChangedListener(treeSelectionChangedListener);
 
         // the text field for the resource name
-        createLabel(composite, Policy.bind("MoveRemoteResourceWizardMainPage.resourceName")); //$NON-NLS-1$
+        createLabel(composite, ""); //$NON-NLS-1$
 
         resourceNameText = createTextField(composite);
         resourceNameText.addListener(SWT.Selection, listener);
@@ -121,6 +144,19 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
         resourceNameText.setFocus();
 
 		setControl(composite);
+
+        // set the initial selection in the tree
+        if (parentFolder != null) {
+            Object toSelect = null;
+            if (parentFolder.getParent() == null) {
+                // the root folder : select the repository
+                toSelect = parentFolder.getRepository();
+            }
+            else
+                toSelect = parentFolder;
+            viewer.expandToLevel(toSelect,0);
+            viewer.setSelection(new StructuredSelection(toSelect),true);
+        }
 
 	}
 
@@ -135,7 +171,13 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
 			setPageComplete(false);
 			return;
 		}
-		
+		try {
+			new SVNUrl(Util.appendPath(urlParentText.getText(), resourceNameText.getText()));
+		} catch (MalformedURLException e) {
+			setErrorMessage(""); //$NON-NLS-1$);
+			setPageComplete(false);
+			return;
+		}
 		setErrorMessage(null);
 		setPageComplete(true);
 	}
@@ -148,6 +190,12 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
 		}
 	}
 
+    /**
+     * returns the parent folder of the destination
+     */
+    public ISVNRemoteFolder getParentFolder() {
+        return parentFolder;
+    }
 
     /**
      * get the destination name of the resource
@@ -156,5 +204,13 @@ public class DeployFeatureWizardMainPage extends FeatureDeployerWizardPage {
         return resourceNameText.getText();
     }
 
+    /**
+     * set the remote resource. Call this method before the creation of the control.
+     * This will select the folder
+     */
+    public void setRemoteResource(ISVNRemoteResource remoteResource) {
+        parentFolder = remoteResource.getParent();
+        resourceName = remoteResource.getName();
+    }
 
 }

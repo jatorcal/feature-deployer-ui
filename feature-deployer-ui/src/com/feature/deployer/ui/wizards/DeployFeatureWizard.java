@@ -8,7 +8,7 @@
  * Contributors:
  *     Subclipse project committers - initial API and implementation
  ******************************************************************************/
-package feature.deployer.wizard;
+package com.feature.deployer.ui.wizards;
 
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,17 +21,14 @@ import org.eclipse.jface.wizard.Wizard;
 import org.tigris.subversion.subclipse.core.ISVNRemoteResource;
 import org.tigris.subversion.subclipse.ui.ISVNUIConstants;
 import org.tigris.subversion.subclipse.ui.Policy;
-import org.tigris.subversion.subclipse.ui.SVNUIPlugin;
-import org.tigris.subversion.subclipse.ui.wizards.ClosableWizardDialog;
 
-import feature.deployer.preferences.page.Activator;
+import com.feature.deployer.ui.activator.Activator;
 
 /**
  * Wizard to move a remote resource
  */
 public class DeployFeatureWizard extends Wizard {
 	private DeployFeatureWizardMainPage mainPage;
-    //private CommentCommitWizardPage commitCommentPage; 
     private ISVNRemoteResource selection;
     private Dialog parentDialog;
 	
@@ -45,20 +42,22 @@ public class DeployFeatureWizard extends Wizard {
 	 * Creates the wizard pages
 	 */
 	public void addPages() {
+		
 		// add the main page
         mainPage = new DeployFeatureWizardMainPage(
             "newRemoteFolderPage1",  //$NON-NLS-1$ 
-            Policy.bind("DeployFeatureWizardMainPage.deployFeatureHeading"), //$NON-NLS-1$
+            Policy.bind("MoveRemoteFolderWizard.heading"), //$NON-NLS-1$
             Activator.getPlugin().getImageDescriptor(ISVNUIConstants.IMG_WIZBAN_NEW_FOLDER));
-        //mainPage.setRemoteResource(selection);
+        mainPage.setRemoteResource(selection);
 		addPage(mainPage);
         
         // add commit comment page
-        String pageTitle = Policy.bind("DeployFeatureWizardMainPage.deployFeature"); //$NON-NLS-1$
-        String pageDescription = Policy.bind("DeployFeatureWizardMainPage.deployFeaturePageDescription"); //$NON-NLS-1$
-        ImageDescriptor image = Activator.getPlugin().getImageDescriptor("/icons/features.png");
+        String pageTitle = Policy.bind("CommentCommitWizardPage.pageTitle"); //$NON-NLS-1$
+        String pageDescription = Policy.bind("CommentCommitWizardPage.pageDescription"); //$NON-NLS-1$
+        ImageDescriptor image = Activator.getPlugin().getImageDescriptor(ISVNUIConstants.IMG_WIZBAN_NEW_FOLDER);
         //commitCommentPage = new CommentCommitWizardPage(parentDialog, pageTitle, pageTitle, image, pageDescription);
-        //addPage(commitCommentPage); 
+        
+        
                 
 	}
     
@@ -67,15 +66,24 @@ public class DeployFeatureWizard extends Wizard {
 	 */
 	public boolean performFinish() {
         try {
-            SVNUIPlugin.runWithProgress(getContainer().getShell(), false /*cancelable*/, new IRunnableWithProgress() {
+        	Activator.runWithProgress(getContainer().getShell(), false /*cancelable*/, new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                	
+                    /*try {
+                        SVNProviderPlugin.getPlugin().getRepositoryResourcesManager().
+                            moveRemoteResource(
+                                selection,mainPage.getParentFolder(),
+                                mainPage.getResourceName(),
+                                commitCommentPage.getComment(),monitor);
+                        
+                    } catch (SVNException e) {
+                        throw new InvocationTargetException(e);
+                    }*/
                 }
             });
         } catch (InterruptedException e) {
             // operation canceled
         } catch (InvocationTargetException e) {
-            SVNUIPlugin.openError(getContainer().getShell(), Policy.bind("exception"), null, e.getCause(), SVNUIPlugin.PERFORM_SYNC_EXEC); //$NON-NLS-1$
+            //Activator.openError(getContainer().getShell(), "", null, e.getCause()); //$NON-NLS-1$
             return false;
         }
 	   return true;
@@ -90,9 +98,7 @@ public class DeployFeatureWizard extends Wizard {
     }
     
     public void finishAndClose() {
-    	if (parentDialog != null && parentDialog instanceof ClosableWizardDialog && canFinish()) {
-    		((ClosableWizardDialog)parentDialog).finishPressed();
-    	}
+    	
     }    
     
 }

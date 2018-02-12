@@ -3,134 +3,60 @@
 <plugin>
 
    <extension
-         id="application"
-         point="org.eclipse.core.runtime.applications">
-      <application>
-         <run
-               class="feature.deployer.preferences.page.Application">
-         </run>
-      </application>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectives">
-      <perspective
-            name="RCP Perspective"
-            class="feature.deployer.preferences.page.Perspective"
-            id="feature.deployer.preferences.page.perspective">
-      </perspective>
-   </extension>
-    <extension
-         point="org.eclipse.ui.views">
-      <view
-            name="View"
-            class="feature.deployer.preferences.page.View"
-            id="feature.deployer.preferences.page.view">
-      </view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.perspectiveExtensions">
-      <perspectiveExtension
-            targetID="*">
-         <view
-               standalone="true"
-               minimized="false"
-               relative="org.eclipse.ui.editorss"
-               relationship="left"
-               id="feature.deployer.preferences.page.view">
-         </view>
-      </perspectiveExtension>
-   </extension>
-   <extension
-         point="org.eclipse.ui.preferencePages">
-      <page
-            class="feature.deployer.preferences.page.preferencepage.MyPreferencePage1"
-            id="feature.deployer.preferences.page.preferencepage1"
-            name="MyPreference Page">
-      </page>
-   </extension>
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu">
-         <command
-               commandId="org.eclipse.ui.window.preferences"
-               label="Show Preferences"
-               style="push">
-         </command>
-         <command
-               commandId="feature.deployer.preferences.page.showPreferenceValues"
-               label="Show Values"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-   <extension
          point="org.eclipse.ui.commands">
+      <category
+            name="Sample Category"
+            id="feature-deployer-ui.commands.category">
+      </category>
       <command
-            defaultHandler="feature.deployer.preferences.page.handler.ShowPreferenceValues"
-            id="feature.deployer.preferences.page.showPreferenceValues"
-            name="Show">
+            name="Sample Command"
+            categoryId="feature-deployer-ui.commands.category"
+            id="feature-deployer-ui.commands.sampleCommand">
       </command>
    </extension>
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="feature.deployer.preferences.page.preferencepage.MyInitializer">
-      </initializer>
-   </extension>
-   
-   
-   <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="feature.deployer.command.SampleCommand"
-            class="feature.deployer.command.SampleCommand">
+            commandId="feature-deployer-ui.commands.sampleCommand"
+            class="featuredeployerui.handlers.SampleHandler">
       </handler>
    </extension>
-   
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="feature-deployer-ui.commands.sampleCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            sequence="M1+6"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
+      </key>
+   </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="popup:common.new.menu?after=new">
-         <command
-               commandId="feature.deployer.command.SampleCommand"
-               icon="icons/features.png"
-               label="Example"
-               style="push">
-            <visibleWhen>
-               <with
-                     variable="selection">
-                  <iterate
-                        ifEmpty="false">
-                     <instanceof
-                           value="org.eclipse.core.resources.IResource">
-                     </instanceof>                    
-                  </iterate>
-               </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>     
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               label="Sample Menu"
+               mnemonic="M"
+               id="feature-deployer-ui.menus.sampleMenu">
+            <command
+                  commandId="feature-deployer-ui.commands.sampleCommand"
+                  mnemonic="S"
+                  id="feature-deployer-ui.menus.sampleCommand">
+            </command>
+         </menu>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="feature-deployer-ui.toolbars.sampleToolbar">
+            <command
+                  commandId="feature-deployer-ui.commands.sampleCommand"
+                  icon="icons/sample.png"
+                  tooltip="Say hello world"
+                  id="feature-deployer-ui.toolbars.sampleCommand">
+            </command>
+         </toolbar>
+      </menuContribution>
    </extension>
-   
-   
-	<actionSet label="%SVNActionSet.label" visible="false" id="org.tigris.subversion.subclipse.actionSet">
-		<action 
-			definitionId="feature.deployer.command.samplecommand" 
-			label="%SVNAction.tigris.createRelease" icon="icons/full/empty/empty.gif" 
-			helpContextId="feature.deployer.command.samplecommand" 
-			class="feature.deployer.command.SampleCommand" 
-			tooltip="%SVNAction.tigris.createRelease" 
-			menubarPath="org.tigris.subversion.subclipse.svnmenu/SVNGroupMenu4" 
-			id="feature.deployer.command.samplecommand"></action>		
-	</actionSet>
-   
-	<extension point="org.eclipse.ui.commands">
-		<category name="%SVNActionSet.categoryName" description="%SVNActionSet.description" id="org.tigris.subversion.subclipse.commandCategory"></category>
-		<command 
-			categoryId="org.tigris.subversion.subclipse.commandCategory"
-			name="%SVNAction.tigris.createRelease"
-			id="feature.deployer.command.samplecommand"/>
-	</extension>
-   
 
 </plugin>
