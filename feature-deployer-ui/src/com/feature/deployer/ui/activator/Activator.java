@@ -2,7 +2,6 @@ package com.feature.deployer.ui.activator;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;

@@ -5,10 +5,12 @@ Bundle-SymbolicName: feature-deployer-ui;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.feature.deployer.ui.activator.Activator
 Require-Bundle: org.eclipse.core.runtime,
- org.tigris.subversion.subclipse.core;bundle-version="4.2.3",
- org.eclipse.ui
+ org.eclipse.ui,
+ org.eclipse.team.core;bundle-version="3.8.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Import-Package: org.eclipse.team.internal.ui,
- org.tigris.subversion.subclipse.ui
-Export-Package: com.feature.deployer.ui.wizards
+Export-Package: com.feature.deployer.ui.pages,
+ com.feature.deployer.ui.wizards
+Bundle-ClassPath: .,
+ jgoodies-common-1.8.0.jar,
+ jgoodies-forms-1.8.0.jar

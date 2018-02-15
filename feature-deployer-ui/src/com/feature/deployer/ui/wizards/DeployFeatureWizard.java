@@ -10,95 +10,113 @@
  ******************************************************************************/
 package com.feature.deployer.ui.wizards;
 
-
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Hashtable;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.Wizard;
-import org.tigris.subversion.subclipse.core.ISVNRemoteResource;
-import org.tigris.subversion.subclipse.ui.ISVNUIConstants;
-import org.tigris.subversion.subclipse.ui.Policy;
 
 import com.feature.deployer.ui.activator.Activator;
+import com.feature.deployer.ui.pages.DeployFeatureWizardPage1;
+import com.feature.deployer.ui.pages.DeployFeatureWizardPage2;
 
 /**
  * Wizard to move a remote resource
  */
 public class DeployFeatureWizard extends Wizard {
-	private DeployFeatureWizardMainPage mainPage;
-    private ISVNRemoteResource selection;
-    private Dialog parentDialog;
-	
-   
-	public DeployFeatureWizard(ISVNRemoteResource selection) {
-		setWindowTitle(Policy.bind("moveRemoteFolderWizard.title")); //$NON-NLS-1$
-        this.selection = selection;
+
+	private String path;
+	private Dialog parentDialog;
+
+	public DeployFeatureWizard(String path) {
+		super();
+		setWindowTitle("Titulo ventana"); //$NON-NLS-1$
+		this.path = path;
+		setNeedsProgressMonitor(true);
 	}
 
 	/**
 	 * Creates the wizard pages
 	 */
+	@SuppressWarnings("static-access")
 	public void addPages() {
+
+		String pageTitle = "Despliegue de features"; //$NON-NLS-1$
+		String pageDescription = "Selecciona las opciones del wizard para desplegar tu/s feature/s."; //$NON-NLS-1$
+		ImageDescriptor image = Activator.getPlugin().getImageDescriptor("sample.png");
+
+		// Shared map
+		Hashtable map = new Hashtable();
+		
 		
 		// add the main page
-        mainPage = new DeployFeatureWizardMainPage(
-            "newRemoteFolderPage1",  //$NON-NLS-1$ 
-            Policy.bind("MoveRemoteFolderWizard.heading"), //$NON-NLS-1$
-            Activator.getPlugin().getImageDescriptor(ISVNUIConstants.IMG_WIZBAN_NEW_FOLDER));
-        mainPage.setRemoteResource(selection);
-		addPage(mainPage);
-        
-        // add commit comment page
-        String pageTitle = Policy.bind("CommentCommitWizardPage.pageTitle"); //$NON-NLS-1$
-        String pageDescription = Policy.bind("CommentCommitWizardPage.pageDescription"); //$NON-NLS-1$
-        ImageDescriptor image = Activator.getPlugin().getImageDescriptor(ISVNUIConstants.IMG_WIZBAN_NEW_FOLDER);
-        //commitCommentPage = new CommentCommitWizardPage(parentDialog, pageTitle, pageTitle, image, pageDescription);
-        
-        
-                
+		DeployFeatureWizardPage1 page1 = new DeployFeatureWizardPage1(
+				"DeployFeatureWizardPage1",
+				pageTitle,
+				image, 
+				pageDescription, map);
+		
+		page1.comboBoxIncludesFront.addActionListener(new ActionListener() {//add actionlistner to listen for change
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            	if (page1.comboBoxIncludesFront.getSelectedItem().equals("Sí")){
+					page1.setIncludesFront(true);
+				} else {
+					page1.setIncludesFront(false);
+				}
+            }
+        });
+		
+		
+		DeployFeatureWizardPage2 page2 = new DeployFeatureWizardPage2("DeployFeatureWizardPage2", pageTitle,
+				Activator.getPlugin().getImageDescriptor("sample.png"), pageDescription, map);
+		addPage(page2);
+
 	}
-    
+
 	/*
 	 * @see IWizard#performFinish
 	 */
 	public boolean performFinish() {
-        try {
-        	Activator.runWithProgress(getContainer().getShell(), false /*cancelable*/, new IRunnableWithProgress() {
-                public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                    /*try {
-                        SVNProviderPlugin.getPlugin().getRepositoryResourcesManager().
-                            moveRemoteResource(
-                                selection,mainPage.getParentFolder(),
-                                mainPage.getResourceName(),
-                                commitCommentPage.getComment(),monitor);
-                        
-                    } catch (SVNException e) {
-                        throw new InvocationTargetException(e);
-                    }*/
-                }
-            });
-        } catch (InterruptedException e) {
-            // operation canceled
-        } catch (InvocationTargetException e) {
-            //Activator.openError(getContainer().getShell(), "", null, e.getCause()); //$NON-NLS-1$
-            return false;
-        }
-	   return true;
+		try {
+			Activator.runWithProgress(getContainer().getShell(), false /* cancelable */, new IRunnableWithProgress() {
+				public void run(IProgressMonitor monitor) throws InvocationTargetException {
+					/*
+					 * try { SVNProviderPlugin.getPlugin().getRepositoryResourcesManager().
+					 * moveRemoteResource( selection,mainPage.getParentFolder(),
+					 * mainPage.getResourceName(), commitCommentPage.getComment(),monitor);
+					 * 
+					 * } catch (SVNException e) { throw new InvocationTargetException(e); }
+					 */
+				}
+			});
+		} catch (InterruptedException e) {
+			// operation canceled
+		} catch (InvocationTargetException e) {
+			// Activator.openError(getContainer().getShell(), "", null, e.getCause());
+			// //$NON-NLS-1$
+			return false;
+		}
+		return true;
 	}
-    
-    /**
-     * Method setParentDialog.
-     * @param dialog
-     */
-    public void setParentDialog(Dialog dialog) {
-        this.parentDialog = dialog;
-    }
-    
-    public void finishAndClose() {
-    	
-    }    
-    
+
+	/**
+	 * Method setParentDialog.
+	 * 
+	 * @param dialog
+	 */
+	public void setParentDialog(Dialog dialog) {
+		this.parentDialog = dialog;
+	}
+
+	public void finishAndClose() {
+
+	}
+
 }
